@@ -1,0 +1,25 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Audio and MIDI
+*.wav
+*.midi
+
+# IDEs
+.vscode/
+.idea/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
