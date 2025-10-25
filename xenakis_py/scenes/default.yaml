@@ -1,0 +1,39 @@
+
+# Default scene for Xenakis-style sieve demo
+bpm: 96
+length_steps: 256
+# how long each note lasts (ticks at 480 tpq):
+# 480 = quarter, 240 = 8th, 120 = 16th, 60 = 32nd, 30 = 64th
+note_ticks: 120
+
+pitch_map:
+  low: 48      # C3
+  high: 84     # C6
+
+sieve:
+  shift: 0   # optional transposition of the sieve set
+  clauses:
+    - [union,        {modulus: 9, residues: [0]]
+    - [intersection, {modulus: 7, residues: [1]]
+    - [complement,   {modulus: 5, residues: [2]]  # optional clause
+
+  period_mode: "auto"  # can be "auto", "fixed", or "none"
+
+routing:
+  midi:
+    port: auto         # "auto" = first available; or specify exact port name
+    channel: 0
+  osc:
+    host: "127.0.0.1"
+    port: 57120        # SuperCollider default
+
+output:
+  write_midi_file: true
+  midi_filename: demo_sieve.mid
+  realtime: false      # set to true for live playback
+
+metadata:
+  scene_name: "Sievescape"
+  author: "Daniel Castro"
+  tags: ["xenakis", "sieve", "modular", "midi", "installation"]
+
