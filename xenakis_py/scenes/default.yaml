@@ -13,11 +13,23 @@ pitch_map:
 sieve:
   shift: 0   # optional transposition of the sieve set
   clauses:
-    - [union,        {modulus: 9, residues: [0]]
-    - [intersection, {modulus: 7, residues: [1]]
-    - [complement,   {modulus: 5, residues: [2]]  # optional clause
+    - [union,        modulus: 9, residues: [0]]
+    - [intersection, modulus: 7, residues: [1]]
+    - [complement,   modulus: 5, residues: [2]]  # optional clause
 
   period_mode: "auto"  # can be "auto", "fixed", or "none"
+
+dss:
+  backend: "sc"
+  params:
+    amp_lo: -0.8
+    amp_hi: 0.8
+    dur_lo: 0.002
+    dur_hi: 0.03
+    freq_lo: 100.0
+    freq_hi: 800.0
+    chaos: 0.5
+    memory: 0.5
 
 routing:
   midi:
