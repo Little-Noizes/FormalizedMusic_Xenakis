@@ -67,3 +67,10 @@ if __name__ == "__main__":
     filename = f"analogique_a_demo_{ts}.mid"
     renderer.save(filename)
     print(f"✅ Wrote {filename}")
+
+
+# To generate the midi file, run the following command in your terminal:
+#   python -c "from xenakis_py import mkv_analogique_a; import time; ts=time.strftime('%Y%m%d_%H%M%S'); mkv_analogique_a.renderer.save(f'analogique_a_demo_{ts}.mid')"
+#
+#
+#

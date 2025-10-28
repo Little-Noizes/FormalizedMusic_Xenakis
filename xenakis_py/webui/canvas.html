@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UPIC Drawing Interface</title>
+  <style>
+    body { font-family: sans-serif; }
+    canvas { border: 1px solid black; }
+  </style>
+</head>
+<body>
+  <h2>Draw your score (X = time, Y = frequency)</h2>
+
+  <canvas id="drawCanvas" width="800" height="400"></canvas><br>
+
+  <!-- Add the missing sliders and checkbox -->
+  <label>Amplitude:
+    <input type="range" id="amp" min="0" max="1" step="0.01" value="0.5">
+  </label><br>
+
+  <label>Glissando Rate:
+    <input type="range" id="gliss" min="0" max="1" step="0.01" value="0.2">
+  </label><br>
+
+  <label>Density:
+    <input type="range" id="dens" min="0" max="1" step="0.01" value="0.8">
+  </label><br>
+
+  <label>Live (play while drawing):
+    <input type="checkbox" id="live" checked>
+  </label><br><br>
+
+  <button onclick="sendPath()">Send to Synth</button>
+
+  <script>
+  const canvas = document.getElementById('drawCanvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let path = [];
+  let lastSend = 0;
+  const THROTTLE_MS = 25; // ~40fps
+
+  canvas.addEventListener('mousedown', () => { drawing = true; path = []; });
+  canvas.addEventListener('mouseup', () => {
+    drawing = false;
+    fetch('/point_release', { method: 'POST' }).catch(()=>{});
+  });
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (drawing) {
+      path.push([x, y]);
+      ctx.fillRect(x, y, 2, 2);
+
+      if (document.getElementById('live').checked) {
+        const now = performance.now();
+        if (now - lastSend >= THROTTLE_MS) {
+          lastSend = now;
+          const amp  = parseFloat(document.getElementById('amp').value);
+          const gliss = parseFloat(document.getElementById('gliss').value);
+          const dens = parseFloat(document.getElementById('dens').value);
+          fetch('/point', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              x, y,
+              width: canvas.width,
+              height: canvas.height,
+              amplitude: amp,
+              glissando_rate: gliss,
+              density: dens
+            })
+          }).catch(()=>{});
+        }
+      }
+    }
+  });
+
+  function sendPath() {
+    const amp  = parseFloat(document.getElementById('amp').value);
+    const gliss = parseFloat(document.getElementById('gliss').value);
+    const dens = parseFloat(document.getElementById('dens').value);
+    fetch('/send_path', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path: path,
+        width: canvas.width,
+        height: canvas.height,
+        amplitude: amp,
+        glissando_rate: gliss,
+        density: dens
+      })
+    }).then(r => r.text()).then(t => alert(t));
+  }
+  </script>
+</body>
+</html>
