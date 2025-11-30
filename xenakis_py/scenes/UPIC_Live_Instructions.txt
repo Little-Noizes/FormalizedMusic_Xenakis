@@ -1,0 +1,108 @@
+UPIC Live Demo — Installation & Run Guide
+================================================
+
+System Requirements
+-------------------
+- Windows 10 or later
+- Python 3.12 or 3.13
+- SuperCollider 3.13+
+
+-------------------------------------------------
+1) Install required Python packages
+-------------------------------------------------
+Open PowerShell and run:
+
+    python -m pip install --upgrade pip
+    python -m pip install fastapi uvicorn python-osc
+
+-------------------------------------------------
+2) Place this file structure
+-------------------------------------------------
+    C:\Users\usuario\Documents\PR_xenakis\xenakis_py\scripts\demo_upic_live.py
+    (You can create the 'scripts' folder if it doesn’t exist.)
+
+-------------------------------------------------
+3) SuperCollider setup
+-------------------------------------------------
+Open SuperCollider and run these THREE blocks in order:
+
+[A] Boot server
+    s.boot;
+
+[B] SynthDefs
+(
+SynthDef(\upicSynth, { |freq = 440, amp = 0.5, gliss = 0.2, dens = 0.8|
+    var env = EnvGen.kr(Env.perc(0.01, 0.3), doneAction: 2);
+    var mod = LFNoise2.kr(dens * 10) * gliss * 100;
+    var sig = SinOsc.ar(freq + mod, 0, amp) * env;
+    Out.ar(0, sig.dup);
+}).add;
+
+SynthDef(\upicLive, { |freq = 440, amp = 0.0, gliss = 0.2, dens = 0.8|
+    var f  = Lag.kr(freq, 0.03);
+    var a  = Lag.kr(amp,  0.03);
+    var g  = Lag.kr(gliss,0.03);
+    var d  = Lag.kr(dens, 0.03);
+    var mod = LFNoise2.kr(d * 10) * g * 100;
+    var sig = SinOsc.ar(f + mod, 0, a);
+    Out.ar(0, sig.dup);
+}).add;
+)
+
+[C] Live synth + OSC handlers
+(
+~upicLive = Synth(\upicLive, [\amp, 0.0]);
+
+OSCdef(\upic, { |msg|
+    var t = msg[1], f = msg[2], a = msg[3], g = msg[4], d = msg[5];
+    Synth(\upicSynth, [\freq, f, \amp, a, \gliss, g, \dens, d]);
+}, '/upic');
+
+OSCdef(\upic_live, { |msg|
+    var f = msg[1], a = msg[2], g = msg[3], d = msg[4];
+    ~upicLive.set(\freq, f, \amp, a, \gliss, g, \dens, d);
+}, '/upic_live');
+
+OSCdef(\upic_live_release, {
+    ~upicLive.set(\amp, 0.0);
+}, '/upic_live_release');
+)
+-------------------------------------------------
+4) Run the FastAPI server
+-------------------------------------------------
+In PowerShell:
+
+    cd C:\Users\usuario\Documents\PR_xenakis\xenakis_py\scripts
+    python demo_upic_live.py
+
+You should see:
+    INFO:     Uvicorn running on http://127.0.0.1:8000
+
+-------------------------------------------------
+5) Use the Interface
+-------------------------------------------------
+Open a browser to:
+    http://127.0.0.1:8000
+
+- Draw in the white canvas.
+- The line colour shows pitch (blue=low, green=mid, red=high).
+- With “Live” checked → hear real-time sound while drawing.
+- Click “Send to Synth” → batch playback of full path.
+
+-------------------------------------------------
+6) Stop / Reset
+-------------------------------------------------
+- Stop the Python server: Ctrl + C in PowerShell.
+- Stop all sound in SuperCollider:
+      s.freeAll;
+
+-------------------------------------------------
+Optional Tweaks
+-------------------------------------------------
+- Invert pitch mapping:
+      freq = 200 + ((height - y) / height) * 1800
+- Adjust smoothing:
+      Lag.kr(freq, 0.05)
+- Change colour gradient in JS (freqToColour).
+
+Enjoy your mini-UPIC!

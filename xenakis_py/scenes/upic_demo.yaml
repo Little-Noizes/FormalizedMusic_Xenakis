@@ -1,0 +1,16 @@
+scene: upic_demo
+canvas:
+  width: 800
+  height: 400
+  duration: 10.0
+osc:
+  host: "127.0.0.1"
+  port: 57120
+  address: "/upic"
+frequency_range: [200, 2000]
+
+amplitude: 0.5
+glissando_rate: 0.2
+density: 0.8
+color_scheme: "viridis"
+background_color: "#000000"
